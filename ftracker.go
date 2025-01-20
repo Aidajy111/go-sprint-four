@@ -53,9 +53,9 @@ func ShowTrainingInfo(action int, trainingType string, duration, weight, height 
 		calories := RunningSpentCalories(action, weight, duration) // вызовите здесь необходимую функцию
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, duration, distance, speed, calories)
 	case trainingType == "Ходьба":
-		distance := distance(action)                                              // вызовите здесь необходимую функцию
-		speed := meanSpeed(action, duration)                                      // вызовите здесь необходимую функцию
-		calories := WalkingSpentCalories(action, duration, weight, height, speed) // вызовите здесь необходимую функцию
+		distance := distance(action)                                       // вызовите здесь необходимую функцию
+		speed := meanSpeed(action, duration)                               // вызовите здесь необходимую функцию
+		calories := WalkingSpentCalories(action, duration, weight, height) // вызовите здесь необходимую функцию
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, duration, distance, speed, calories)
 	case trainingType == "Плавание":
 		distance := distance(action)
@@ -105,7 +105,7 @@ const (
 // duration float64 — длительность тренировки в часах.
 // weight float64 — вес пользователя.
 // height float64 — рост пользователя.
-func WalkingSpentCalories(action int, duration, weight, height, speed float64) float64 {
+func WalkingSpentCalories(action int, duration, weight, height float64) float64 {
 	// ваш код здесь
 	// ((0.035 * ВесСпортсменаВКг + (СредняяСкоростьВМетрахВСекунду**2 / РостВМетрах) * 0.029 * ВесСпортсменаВКг) * ВремяТренировкиВЧасах * minInH)
 
@@ -113,15 +113,14 @@ func WalkingSpentCalories(action int, duration, weight, height, speed float64) f
 		return 0
 	}
 
-	speed *= kmhInMsec
+	meanSpeedInmsec := meanSpeed(action, duration) * kmhInMsec
 	heightInM := height / cmInM
 
-	if heightInM <= 0 || speed <= 0 {
+	if heightInM <= 0 || meanSpeedInmsec <= 0 {
 		return 0
 	}
-	calories := (walkingCaloriesWeightMultiplier*weight + (math.Pow(speed, 2)/heightInM)*walkingSpeedHeightMultiplier*weight) * duration * 60
-	fmt.Printf("speed: %.2f m/s, heightInM: %.2f m, calories: %.2f\n", speed, heightInM, calories)
-	return math.Round(calories*100) / 100
+
+	return ((walkingCaloriesWeightMultiplier*weight + (math.Pow(meanSpeedInmsec, 2)/heightInM)*walkingSpeedHeightMultiplier*weight) * duration * minInH)
 }
 
 // Константы для расчета калорий, расходуемых при плавании.
